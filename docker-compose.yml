@@ -4,6 +4,10 @@ services:
 
   db:
     image: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
     env_file:
       - ./django-polls.env
 
@@ -14,5 +18,30 @@ services:
     command: bash run-server.sh
     env_file:
       - ./django-polls.env
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - static-web-content:/django-mysite/static
+    ports:
+      - 8001:8001
+
+  nginx:
+    depends_on:
+      - app-server
+    image: nginx
+    networks:
+      - frontend
     ports:
       - 8000:8000
+    volumes:
+      - static-web-content:/etc/nginx/static
+      - ./mysite/mysite_nginx.conf:/etc/nginx/conf.d/mysite_nginx.conf
+
+volumes:
+  static-web-content:
+  pgdata:
+
+networks:
+  frontend:
+  backend:

@@ -12,19 +12,19 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER"
 done
 # end of Wait for Postgres SQL container
 
-mkdir -p static
-ln -s /django-mysite/mysite_nginx.conf /etc/nginx/sites-available/mysite_nginx.conf
-ln -s /django-mysite/mysite_nginx.conf /etc/nginx/sites-enabled/mysite_nginx.conf
+# ln -s /django-mysite/mysite_nginx.conf /etc/nginx/sites-available/mysite_nginx.conf
+# ln -s /django-mysite/mysite_nginx.conf /etc/nginx/sites-enabled/mysite_nginx.conf
 
 python manage.py migrate
 python manage.py collectstatic
+
 /etc/init.d/nginx restart
+
 uwsgi --chdir=/django-mysite \
     --module mysite.wsgi:application \
     --env DJANGO_SETTINGS_MODULE=mysite.settings \
     --master --pidfile=/tmp/project-master.pid \
-    --socket 127.0.0.1:8001 \
-    --chmod-socket=666 \
+    --socket 0.0.0.0:8001 \
     --processes=5 \
     --harakiri=20 \
     --max-requests=5000 \
